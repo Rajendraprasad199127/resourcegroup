@@ -58,7 +58,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number,
-              reviewers: ['username1', 'username2'] // Add the GitHub usernames of the users who need to approve
+              reviewers: ['Rajendraprasad199127',] // Add the GitHub usernames of the users who need to approve
             });
             console.log(response.data);
             
