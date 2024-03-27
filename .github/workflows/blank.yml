@@ -57,21 +57,41 @@ jobs:
         tf_actions_subcommand: 'plan'
         tf_actions_working_dir: "./"
 
-    - name: Submit plan for approval
-      uses: jbergknoff/github-action-wait-for-terraform-plan-approval@v1
+   # Save the plan output as an artifact
+    - name: Save plan artifact
+      uses: actions/upload-artifact@v2
       with:
-        command: submit
-        plan_contents: ${{steps.plan.outputs.stdout}}
+          name: terraform-plan
+          path: ${{ steps.plan.outputs.plan_directory }}
 
-    # Snip: send a Slack DM asking somebody to visit `steps.submit_plan.outputs.approval_prompt_url` to approve
-
-    - name: Wait for approval
-      uses: jbergknoff/github-action-wait-for-terraform-plan-approval@v1
+      # Request approval for Terraform plan
+    - name: Request Approval
+      id: approval
+      uses: actions/github-script@v4
       with:
-        command: wait
-        plan_id: ${{steps.submit_plan.outputs.plan_id}}
-        timeout_seconds: 600
- 
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const response = await github.request('POST /repos/:owner/:repo/pulls/:pull_number/requested_reviewers', {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              reviewers: ['username1', 'username2'] // Add the GitHub usernames of the users who need to approve
+            });
+            console.log(response.data);
+
+      # Wait for approval
+    - name: Wait for Approval
+      id: wait-for-approval
+      run: |
+          sleep 10  # Wait for 10 seconds for reviewers to approve. Adjust as needed.
+          APPROVED=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/${{ github.event.pull_request.number }}/reviews | jq '.[] | select(.state=="APPROVED")' | wc -l)
+          if [ $APPROVED -ge 2 ]; then
+            echo "::set-output name=approved::true"
+          else
+            echo "::set-output name=approved::false"
+          fi
+
+    
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main'
       uses: hashicorp/terraform-github-actions@master
