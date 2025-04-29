@@ -28,8 +28,6 @@ jobs:
 - job: Job_Three
   displayName: 'Job Three - Verify Git LFS'
   dependsOn: Job_Two
-  pool:
-    vmImage: 'ubuntu-20.04'
   steps:
     - script: |
       
