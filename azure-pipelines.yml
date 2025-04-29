@@ -24,3 +24,14 @@ jobs:
       echo Add other tasks to build, test, and deploy your project.
       echo See https://aka.ms/yaml
     displayName: 'Run a multi-line script'
+    
+- job: Job_Three
+  displayName: 'Job Three - Verify Git LFS'
+  dependsOn: Job_Two
+  pool:
+    vmImage: 'ubuntu-20.04'
+  steps:
+  - script: |
+      echo "Checking Git LFS version..."
+      git lfs version
+    displayName: 'Verify Git LFS is Installed'   
