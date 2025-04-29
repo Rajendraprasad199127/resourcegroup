@@ -31,7 +31,11 @@ jobs:
   pool:
     vmImage: 'ubuntu-20.04'
   steps:
-  - script: |
-      echo "Checking Git LFS version..."
-      git lfs version
-    displayName: 'Verify Git LFS is Installed'   
+    - script: |
+      
+        echo "Git version:"
+        git --version
+
+        echo "Git LFS version:"
+        git lfs version
+      displayName: 'Verify Git LFS is Installed'
